@@ -9,3 +9,4 @@ app.use("/api/v1", mainRouter);
 
 
 
+app.listen(3000)
