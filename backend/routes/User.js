@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const {JWT_SECRET} = require("../config");
 
 const signupSchema = zod.object({
-    username: zod.string(),
+    username: zod.string().email(),
     firstName: zod.string(),
     lastName: zod.string(),
     password: zod.string(),
@@ -46,6 +46,38 @@ router.post("/signup", async (req, res) => {
         message: "successfully created",
         token: token
     })
+});
+
+const signInSchema = zod.object({
+    username: zod.string().email(),
+    password: zod.string(),
+})
+
+router.post("/signin", async(req, res) => {
+    const {success} = signInSchema.safeParse(req.body);
+    
+    if(!success) {
+        res.status(411).json({
+            message: "incorrect input"
+        });
+    }
+
+    const user = await User.findOne({
+        username: req.body.username,
+        password: req.body.password,
+    });
+
+    if (user) {
+        const token = jwt.sign({
+            userId: user._id
+        }, JWT_SECRET);
+
+        res.json({
+            token: token
+        });
+        return;
+    }
+
 });
 
 module.exports = router;
